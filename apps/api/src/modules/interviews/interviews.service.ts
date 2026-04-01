@@ -1,15 +1,26 @@
-import { Injectable } from '@nestjs/common';
+import {
+  Injectable,
+  NotFoundException,
+  BadRequestException,
+} from '@nestjs/common';
 import { InterviewSessionEntity } from './entities/interview-session.entity';
 import { InterviewAnswerEntity } from './entities/interview-answer.entity';
 import { CreateInterviewDto } from './dto/create-interview.dto';
 import { CreateInterviewAnswerDto } from './dto/create-interview-answer.dto';
+import { QuestionsService } from '../questions/questions.service';
+import { QuestionEntity } from '../questions/entities/question.entity';
 
 @Injectable()
 export class InterviewsService {
   private sessions: InterviewSessionEntity[] = [];
   private answers: InterviewAnswerEntity[] = [];
 
-  create(dto: CreateInterviewDto): InterviewSessionEntity {
+  constructor(private readonly questionsService: QuestionsService) {}
+
+  create(dto: CreateInterviewDto): {
+    session: InterviewSessionEntity;
+    questions: QuestionEntity[];
+  } {
     const newSession: InterviewSessionEntity = {
       id: Date.now().toString(),
       role: dto.role,
@@ -21,18 +32,28 @@ export class InterviewsService {
 
     this.sessions.push(newSession);
 
-    return newSession;
+    const questions = this.questionsService.findAll({
+      type: dto.type,
+      limit: 5,
+    });
+
+    return {
+      session: newSession,
+      questions,
+    };
   }
 
   addAnswer(sessionId: string, dto: CreateInterviewAnswerDto) {
     const session = this.sessions.find((s) => s.id === sessionId);
 
     if (!session) {
-      throw new Error('Session not found');
+      throw new NotFoundException(`Session with ID ${sessionId} not found`);
     }
 
     if (session.status === 'completed') {
-      throw new Error('Cannot add answers to a completed session');
+      throw new BadRequestException(
+        'Cannot add answers to a completed session',
+      );
     }
 
     const newAnswer: InterviewAnswerEntity = {
@@ -52,7 +73,7 @@ export class InterviewsService {
     const session = this.sessions.find((s) => s.id === sessionId);
 
     if (!session) {
-      throw new Error('Session not found');
+      throw new NotFoundException(`Session with ID ${sessionId} not found`);
     }
 
     session.status = 'completed';
