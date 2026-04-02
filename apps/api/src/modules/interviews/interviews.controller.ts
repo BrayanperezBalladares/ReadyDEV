@@ -8,17 +8,20 @@ export class InterviewsController {
   constructor(private readonly interviewsService: InterviewsService) {}
 
   @Post()
-  create(@Body() dto: CreateInterviewDto) {
+  async create(@Body() dto: CreateInterviewDto) {
     return this.interviewsService.create(dto);
   }
 
   @Post(':id/answers')
-  addAnswer(@Param('id') id: string, @Body() dto: CreateInterviewAnswerDto) {
+  async addAnswer(
+    @Param('id') id: string,
+    @Body() dto: CreateInterviewAnswerDto,
+  ) {
     return this.interviewsService.addAnswer(id, dto);
   }
 
   @Patch(':id/complete')
-  complete(@Param('id') id: string) {
+  async complete(@Param('id') id: string) {
     return this.interviewsService.complete(id);
   }
 }

@@ -7,7 +7,7 @@ export class QuestionsController {
   constructor(private readonly questionsService: QuestionsService) {}
 
   @Get()
-  findAll(@Query() query: GetQuestionsQueryDto) {
+  async findAll(@Query() query: GetQuestionsQueryDto) {
     return this.questionsService.findAll(query);
   }
 }
