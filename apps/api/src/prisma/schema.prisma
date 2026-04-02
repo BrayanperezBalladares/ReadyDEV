@@ -1,0 +1,46 @@
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+model Question {
+  id         String            @id @default(dbgenerated("gen_random_uuid()")) @db.Uuid
+  type       String
+  role       String
+  category   String
+  content    String
+  difficulty String
+  isActive   Boolean           @default(true) @map("is_active")
+  createdAt  DateTime          @default(now()) @map("created_at") @db.Timestamptz(6)
+  answers    InterviewAnswer[]
+
+  @@map("questions")
+}
+
+model InterviewSession {
+  id          String            @id @default(dbgenerated("gen_random_uuid()")) @db.Uuid
+  role        String
+  type        String
+  status      String            @default("in_progress")
+  startedAt   DateTime          @default(now()) @map("started_at") @db.Timestamptz(6)
+  completedAt DateTime?         @map("completed_at") @db.Timestamptz(6)
+  answers     InterviewAnswer[]
+
+  @@map("interview_sessions")
+}
+
+model InterviewAnswer {
+  id         String           @id @default(dbgenerated("gen_random_uuid()")) @db.Uuid
+  sessionId  String           @map("session_id") @db.Uuid
+  questionId String           @map("question_id") @db.Uuid
+  answerText String           @map("answer_text")
+  createdAt  DateTime         @default(now()) @map("created_at") @db.Timestamptz(6)
+  question   Question         @relation(fields: [questionId], references: [id], onDelete: NoAction, onUpdate: NoAction)
+  session    InterviewSession @relation(fields: [sessionId], references: [id], onDelete: Cascade, onUpdate: NoAction)
+
+  @@map("interview_answers")
+}
