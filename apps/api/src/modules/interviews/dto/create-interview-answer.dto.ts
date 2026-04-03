@@ -1,4 +1,12 @@
+/* eslint-disable @typescript-eslint/no-unsafe-call */
+import { IsNotEmpty, IsString, IsUUID } from 'class-validator';
+
 export class CreateInterviewAnswerDto {
-  questionId: string;
-  answerText: string;
+  @IsUUID()
+  @IsNotEmpty()
+  questionId!: string;
+
+  @IsString()
+  @IsNotEmpty()
+  answerText!: string;
 }
